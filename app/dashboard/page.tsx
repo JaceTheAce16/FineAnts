@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { SubscriptionStatus } from "@/components/subscription-status";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,6 +20,11 @@ export default async function DashboardPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {user.email}</p>
+      </div>
+
+      {/* Subscription Status */}
+      <div className="mb-6">
+        <SubscriptionStatus />
       </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -11,6 +11,7 @@ const navItems = [
   { href: "/transactions", label: "Transactions" },
   { href: "/budgets", label: "Budgets" },
   { href: "/goals", label: "Goals" },
+  { href: "/dashboard/subscription", label: "Subscription" },
 ];
 
 export function Navigation() {

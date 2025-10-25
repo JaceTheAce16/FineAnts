@@ -21,10 +21,21 @@ export type TransactionCategory =
   | 'savings'
   | 'other';
 
+export type SubscriptionTier = 'free' | 'basic' | 'premium';
+
+export type SubscriptionStatus =
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'incomplete'
+  | 'trialing';
+
 export interface Profile {
   id: string;
   email: string | null;
   full_name: string | null;
+  subscription_tier: SubscriptionTier;
+  stripe_customer_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -83,4 +94,31 @@ export interface SavingsGoal {
   description: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  stripe_subscription_id: string;
+  stripe_customer_id: string;
+  stripe_price_id: string;
+  status: SubscriptionStatus;
+  current_period_start: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  canceled_at: string | null;
+  trial_start: string | null;
+  trial_end: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WebhookEvent {
+  id: string;
+  stripe_event_id: string;
+  event_type: string;
+  processed: boolean;
+  processed_at: string | null;
+  error_message: string | null;
+  created_at: string;
 }
