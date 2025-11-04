@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SubscriptionStatus } from "@/components/subscription-status";
+import { ReconnectAccountPrompt } from "@/components/reconnect-account-prompt";
+import { PlaidLinkButton } from "@/components/plaid-link-button";
+import { PlaidAccountsList } from "@/components/plaid-accounts-list";
+import { PlaidTransactionsList } from "@/components/plaid-transactions-list";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,6 +25,9 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {user.email}</p>
       </div>
+
+      {/* Reconnect Account Prompt */}
+      <ReconnectAccountPrompt />
 
       {/* Subscription Status */}
       <div className="mb-6">
@@ -107,33 +114,94 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        <div className="mt-8">
+        {/* Plaid Integration Section */}
+        <div className="mt-8 space-y-6">
+          {/* Connect Accounts */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Add Accounts</CardTitle>
+              <CardDescription>
+                Connect accounts via Plaid or add them manually
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col sm:flex-row gap-4">
+              <PlaidLinkButton
+                onSuccess={() => window.location.reload()}
+                onError={(error) => console.error('Plaid connection error:', error)}
+              >
+                Connect with Plaid
+              </PlaidLinkButton>
+              <Button variant="outline" disabled>
+                Add Manual Account (Coming Soon)
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* All Accounts */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Accounts</CardTitle>
+              <CardDescription>
+                All your financial accounts and their balances
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PlaidAccountsList />
+            </CardContent>
+          </Card>
+
+          {/* Recent Transactions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>
+                Your latest financial activity across all accounts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PlaidTransactionsList />
+            </CardContent>
+          </Card>
+
+          {/* Getting Started */}
           <Card>
             <CardHeader>
               <CardTitle>Getting Started</CardTitle>
               <CardDescription>Complete these steps to set up your financial dashboard</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
+                <div className="flex-1">
                   <h3 className="font-semibold">Connect your accounts</h3>
                   <p className="text-sm text-muted-foreground">Link bank accounts, credit cards, and investments</p>
                 </div>
-                <Button>Get Started</Button>
+                <div className="sm:flex-shrink-0">
+                  <PlaidLinkButton
+                    onSuccess={() => window.location.reload()}
+                    size="sm"
+                    showLimitInfo={false}
+                  >
+                    Get Started
+                  </PlaidLinkButton>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg opacity-50">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg opacity-50 gap-4">
+                <div className="flex-1">
                   <h3 className="font-semibold">Set up your budget</h3>
                   <p className="text-sm text-muted-foreground">Create a budget that works for your lifestyle</p>
                 </div>
-                <Button disabled>Coming Soon</Button>
+                <div className="sm:flex-shrink-0">
+                  <Button disabled size="sm">Coming Soon</Button>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg opacity-50">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg opacity-50 gap-4">
+                <div className="flex-1">
                   <h3 className="font-semibold">Add savings goals</h3>
                   <p className="text-sm text-muted-foreground">Track progress toward your financial goals</p>
                 </div>
-                <Button disabled>Coming Soon</Button>
+                <div className="sm:flex-shrink-0">
+                  <Button disabled size="sm">Coming Soon</Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -16,7 +16,8 @@ export type FeatureName =
   | 'debt_optimization'
   | 'retirement_planning'
   | 'export_data'
-  | 'priority_support';
+  | 'priority_support'
+  | 'plaid_integration';
 
 /**
  * Feature access matrix
@@ -24,7 +25,7 @@ export type FeatureName =
  */
 const FEATURE_ACCESS: Record<SubscriptionTier, FeatureName[]> = {
   free: [],
-  basic: ['advanced_budgeting', 'export_data'],
+  basic: ['advanced_budgeting', 'export_data', 'plaid_integration'],
   premium: [
     'unlimited_accounts',
     'advanced_budgeting',
@@ -33,6 +34,7 @@ const FEATURE_ACCESS: Record<SubscriptionTier, FeatureName[]> = {
     'retirement_planning',
     'export_data',
     'priority_support',
+    'plaid_integration',
   ],
 };
 
@@ -52,6 +54,15 @@ const EXPORT_LIMITS: Record<SubscriptionTier, number> = {
   free: 0,
   basic: 10,
   premium: Infinity,
+};
+
+/**
+ * Plaid account limits by tier
+ */
+const PLAID_ACCOUNT_LIMITS: Record<SubscriptionTier, number> = {
+  free: 0,
+  basic: 5,
+  premium: 999,
 };
 
 /**
@@ -203,4 +214,52 @@ export const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
   retirement_planning: 'Plan and track your retirement savings goals',
   export_data: 'Export your financial data to Excel and CSV formats',
   priority_support: 'Get priority email and chat support',
+  plaid_integration: 'Automatically sync transactions from your bank accounts',
 };
+
+/**
+ * Check if user can add more Plaid-connected accounts
+ */
+export async function checkPlaidAccountLimit(): Promise<{
+  canAddMore: boolean;
+  current: number;
+  limit: number;
+  tier: SubscriptionTier;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { canAddMore: false, current: 0, limit: 0, tier: 'free' };
+    }
+
+    // Get user's subscription tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single();
+
+    const tier: SubscriptionTier = profile?.subscription_tier || 'free';
+    const limit = PLAID_ACCOUNT_LIMITS[tier];
+
+    // Count user's Plaid items (not individual accounts, but connected institutions)
+    const { count } = await supabase
+      .from('plaid_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('status', ['active', 'error', 'pending_expiration']);
+
+    const current = count || 0;
+    const canAddMore = current < limit;
+
+    return { canAddMore, current, limit, tier };
+  } catch (error) {
+    console.error('Error checking Plaid account limit:', error);
+    return { canAddMore: false, current: 0, limit: 0, tier: 'free' };
+  }
+}

@@ -30,6 +30,12 @@ export type SubscriptionStatus =
   | 'incomplete'
   | 'trialing';
 
+export type PlaidItemStatus =
+  | 'active'
+  | 'error'
+  | 'pending_expiration'
+  | 'revoked';
+
 export interface Profile {
   id: string;
   email: string | null;
@@ -117,8 +123,41 @@ export interface WebhookEvent {
   id: string;
   stripe_event_id: string;
   event_type: string;
+  event_data: Record<string, any> | null;
   processed: boolean;
   processed_at: string | null;
   error_message: string | null;
   created_at: string;
+}
+
+export interface PlaidItem {
+  id: string;
+  user_id: string;
+  item_id: string;
+  access_token: string; // Always encrypted
+  institution_id: string;
+  institution_name: string;
+  status: PlaidItemStatus;
+  error_code: string | null;
+  error_message: string | null;
+  transactions_cursor: string | null;
+  last_sync: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PlaidLinkMetadata {
+  institution: {
+    institution_id: string;
+    name: string;
+  } | null;
+  accounts: Array<{
+    id: string;
+    name: string;
+    mask: string | null;
+    type: string;
+    subtype: string | null;
+  }>;
+  link_session_id: string;
+  public_token: string;
 }
