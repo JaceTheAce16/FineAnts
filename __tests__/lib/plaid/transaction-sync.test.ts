@@ -12,13 +12,29 @@ const mockSupabaseSelect = vi.fn();
 const mockSupabaseSingle = vi.fn();
 const mockSupabaseEq = vi.fn();
 
+// Separate mocks for sync_locks to avoid confusion with transaction operations
+const mockSyncLockInsert = vi.fn();
+const mockSyncLockDelete = vi.fn();
+const mockSyncLockSelect = vi.fn();
+const mockRpc = vi.fn();
+
 const mockSupabaseAdmin = {
-  from: vi.fn((table: string) => ({
-    insert: mockSupabaseInsert,
-    update: mockSupabaseUpdate,
-    delete: mockSupabaseDelete,
-    select: mockSupabaseSelect,
-  })),
+  from: vi.fn((table: string) => {
+    if (table === 'sync_locks') {
+      return {
+        insert: mockSyncLockInsert,
+        delete: mockSyncLockDelete,
+        select: mockSyncLockSelect,
+      };
+    }
+    return {
+      insert: mockSupabaseInsert,
+      update: mockSupabaseUpdate,
+      delete: mockSupabaseDelete,
+      select: mockSupabaseSelect,
+    };
+  }),
+  rpc: mockRpc,
 };
 
 // Mock Supabase
@@ -61,6 +77,14 @@ describe('Transaction Synchronization', () => {
       }),
     });
 
+    // Helper to create insert chain for sync_locks
+    const createInsertChain = () => ({
+      select: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({ data: { id: 'lock-123' }, error: null }),
+      })),
+      then: (resolve: any) => resolve({ data: {}, error: null }),
+    });
+
     // Default mock implementations
     mockSupabaseSelect.mockImplementation(createSelectChain);
 
@@ -73,6 +97,18 @@ describe('Transaction Synchronization', () => {
     });
 
     mockSupabaseInsert.mockResolvedValue({ error: null });
+
+    // Configure sync_locks mocks
+    mockSyncLockInsert.mockImplementation(() => createInsertChain());
+    mockSyncLockDelete.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+    mockSyncLockSelect.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+    });
+
+    // Configure RPC mock for cleanup function
+    mockRpc.mockResolvedValue({ data: null, error: null });
   });
 
   describe('syncUserTransactions', () => {
