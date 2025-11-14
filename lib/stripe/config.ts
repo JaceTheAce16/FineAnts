@@ -4,11 +4,13 @@
  */
 
 // Server-side only environment variables
+// SECURITY: Never import this in client components! Use stripePublicConfig instead.
 export const stripeConfig = {
   secretKey: process.env.STRIPE_SECRET_KEY,
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  basicPriceId: process.env.STRIPE_BASIC_PRICE_ID,
-  premiumPriceId: process.env.STRIPE_PREMIUM_PRICE_ID,
+  // Price IDs: Support both NEXT_PUBLIC_ (preferred) and non-public versions for backward compatibility
+  basicPriceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID || process.env.STRIPE_BASIC_PRICE_ID,
+  premiumPriceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID || process.env.STRIPE_PREMIUM_PRICE_ID,
 } as const;
 
 // Client-side environment variables
@@ -37,15 +39,15 @@ export function validateStripeConfig() {
   }
 
   if (!stripeConfig.basicPriceId) {
-    errors.push('STRIPE_BASIC_PRICE_ID is not set');
+    errors.push('NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID (or STRIPE_BASIC_PRICE_ID) is not set');
   } else if (!stripeConfig.basicPriceId.startsWith('price_')) {
-    errors.push('STRIPE_BASIC_PRICE_ID must start with "price_"');
+    errors.push('NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID must start with "price_"');
   }
 
   if (!stripeConfig.premiumPriceId) {
-    errors.push('STRIPE_PREMIUM_PRICE_ID is not set');
+    errors.push('NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID (or STRIPE_PREMIUM_PRICE_ID) is not set');
   } else if (!stripeConfig.premiumPriceId.startsWith('price_')) {
-    errors.push('STRIPE_PREMIUM_PRICE_ID must start with "price_"');
+    errors.push('NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID must start with "price_"');
   }
 
   if (!stripePublicConfig.publishableKey) {

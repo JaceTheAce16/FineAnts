@@ -77,9 +77,28 @@ Once deployed, you can test the PWA on your iPhone:
 
 For production deployment, you'll need:
 
+### Supabase (Database & Auth)
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (for server-side operations)
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (server-side only)
+
+### Stripe (Payments)
+- `STRIPE_SECRET_KEY`: Your Stripe secret API key (server-side only)
+- `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook signing secret (server-side only)
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key
+- `NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID`: Stripe price ID for Basic plan
+- `NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID`: Stripe price ID for Premium plan
+
+### Plaid (Financial Account Integration)
+- `PLAID_SECRET_KEY`: Your Plaid secret API key (server-side only)
+- `PLAID_ENCRYPTION_KEY`: 64-char hex encryption key for storing access tokens (server-side only)
+- `NEXT_PUBLIC_PLAID_CLIENT_ID`: Your Plaid client ID
+- `PLAID_ENV`: Plaid environment (sandbox, development, or production)
+
+### App Configuration
+- `NEXT_PUBLIC_APP_URL`: Your application URL (e.g., https://fineanants.app)
+
+⚠️ **Security Note**: Variables prefixed with `NEXT_PUBLIC_` are safe to expose to the browser. All other variables are server-side only and contain sensitive secrets. See [SECURITY.md](./SECURITY.md) for details.
 
 ## Post-Deployment Checklist
 
