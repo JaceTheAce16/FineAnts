@@ -73,7 +73,7 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground mt-2">
                 No accounts connected yet
               </p>
-              <Link href="/accounts">
+              <Link href="/dashboard/accounts">
                 <Button variant="link" className="mt-2 p-0 h-auto">
                   View All Accounts
                   <ArrowRight className="ml-1 h-4 w-4" />
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground mt-2">
                 Create your first savings goal
               </p>
-              <Link href="/goals">
+              <Link href="/dashboard/goals">
                 <Button variant="link" className="mt-2 p-0 h-auto">
                   View All Goals
                   <ArrowRight className="ml-1 h-4 w-4" />
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
                   All your financial accounts and their balances
                 </CardDescription>
               </div>
-              <Link href="/accounts">
+              <Link href="/dashboard/accounts">
                 <Button variant="outline" size="sm">
                   View All
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                   Your latest financial activity across all accounts
                 </CardDescription>
               </div>
-              <Link href="/transactions">
+              <Link href="/dashboard/transactions">
                 <Button variant="outline" size="sm">
                   View All
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -230,7 +230,7 @@ export default async function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Track progress toward your financial goals</p>
                 </div>
                 <div className="sm:flex-shrink-0">
-                  <Link href="/goals">
+                  <Link href="/dashboard/goals">
                     <Button size="sm">View Goals</Button>
                   </Link>
                 </div>
