@@ -249,7 +249,7 @@ export function PlaidAccountsList({ onAccountsChange }: PlaidAccountsListProps) 
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Last synced: {formatDate(lastSync)}
+                    Last synced: {formatDate(lastSync || null)}
                   </p>
                 </div>
                 {itemId && (

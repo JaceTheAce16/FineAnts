@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SubscriptionStatus } from "@/components/subscription-status";
@@ -7,6 +8,7 @@ import { ReconnectAccountPrompt } from "@/components/reconnect-account-prompt";
 import { PlaidLinkButton } from "@/components/plaid-link-button";
 import { PlaidAccountsList } from "@/components/plaid-accounts-list";
 import { PlaidTransactionsList } from "@/components/plaid-transactions-list";
+import { ArrowRight } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -71,6 +73,12 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground mt-2">
                 No accounts connected yet
               </p>
+              <Link href="/accounts">
+                <Button variant="link" className="mt-2 p-0 h-auto">
+                  View All Accounts
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -84,6 +92,12 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground mt-2">
                 Create your first savings goal
               </p>
+              <Link href="/goals">
+                <Button variant="link" className="mt-2 p-0 h-auto">
+                  View All Goals
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -139,11 +153,19 @@ export default async function DashboardPage() {
 
           {/* All Accounts */}
           <Card>
-            <CardHeader>
-              <CardTitle>Your Accounts</CardTitle>
-              <CardDescription>
-                All your financial accounts and their balances
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Your Accounts</CardTitle>
+                <CardDescription>
+                  All your financial accounts and their balances
+                </CardDescription>
+              </div>
+              <Link href="/accounts">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <PlaidAccountsList />
@@ -152,11 +174,19 @@ export default async function DashboardPage() {
 
           {/* Recent Transactions */}
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>
-                Your latest financial activity across all accounts
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Recent Transactions</CardTitle>
+                <CardDescription>
+                  Your latest financial activity across all accounts
+                </CardDescription>
+              </div>
+              <Link href="/transactions">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <PlaidTransactionsList />
@@ -194,13 +224,15 @@ export default async function DashboardPage() {
                   <Button disabled size="sm">Coming Soon</Button>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg opacity-50 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
                 <div className="flex-1">
                   <h3 className="font-semibold">Add savings goals</h3>
                   <p className="text-sm text-muted-foreground">Track progress toward your financial goals</p>
                 </div>
                 <div className="sm:flex-shrink-0">
-                  <Button disabled size="sm">Coming Soon</Button>
+                  <Link href="/goals">
+                    <Button size="sm">View Goals</Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>
