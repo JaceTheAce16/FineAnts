@@ -145,7 +145,7 @@ export function PlaidLinkButton({
     }
   };
 
-  const isButtonDisabled = loading || disabled || checkingLimit || (limitInfo && !limitInfo.canAddMore);
+  const isButtonDisabled = loading || disabled || checkingLimit || Boolean(limitInfo && !limitInfo.canAddMore);
 
   const getUpgradeMessage = () => {
     if (!limitInfo || limitInfo.canAddMore) return null;
