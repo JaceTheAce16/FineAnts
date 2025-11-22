@@ -5,15 +5,11 @@
  * View and manage all financial transactions with filtering and manual entry
  */
 
-
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Filter, Download, Edit2, Save, X, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
-
-
-export default function TransactionsPage() {
 
 // Types
 interface Transaction {
