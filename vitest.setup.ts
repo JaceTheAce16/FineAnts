@@ -20,6 +20,8 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
 process.env.STRIPE_SECRET_KEY = 'sk_test_mock123';
 process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'pk_test_mock123';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_mock123';
+process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID = 'price_test_basic_mock';
+process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID = 'price_test_premium_mock';
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
 
 // Extend expect matchers if needed

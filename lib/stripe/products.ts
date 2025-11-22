@@ -1,14 +1,20 @@
 /**
  * Stripe Subscription Plans Configuration
  * Defines the available subscription tiers and their features
+ *
+ * SECURITY NOTE: This file is safe to import in client components.
+ * Price IDs are not sensitive - they're public identifiers from Stripe.
+ * We use NEXT_PUBLIC_ environment variables to expose them safely.
  */
 
-import { stripeConfig } from './config';
+// Safe to use in client components - these are public environment variables
+const STRIPE_BASIC_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID || process.env.STRIPE_BASIC_PRICE_ID;
+const STRIPE_PREMIUM_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID || process.env.STRIPE_PREMIUM_PRICE_ID;
 
 export const SUBSCRIPTION_PLANS = {
   basic: {
     name: 'Basic Plan',
-    priceId: stripeConfig.basicPriceId!,
+    priceId: STRIPE_BASIC_PRICE_ID!,
     amount: 999, // $9.99 in cents
     interval: 'month' as const,
     features: [
@@ -25,7 +31,7 @@ export const SUBSCRIPTION_PLANS = {
   },
   premium: {
     name: 'Premium Plan',
-    priceId: stripeConfig.premiumPriceId!,
+    priceId: STRIPE_PREMIUM_PRICE_ID!,
     amount: 1999, // $19.99 in cents
     interval: 'month' as const,
     features: [
