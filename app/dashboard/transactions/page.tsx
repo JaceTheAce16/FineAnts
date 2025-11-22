@@ -3,7 +3,8 @@
  * View and manage all financial transactions with filtering and manual entry
  */
 
-'use client';
+export default async function TransactionsPage() {
+  const supabase = await createClient();
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -275,7 +276,6 @@ export default function TransactionsPage() {
             </div>
           </div>
         </Card>
-      </div>
 
       {/* Add Transaction Form */}
       {showAddForm && (

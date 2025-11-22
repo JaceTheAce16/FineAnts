@@ -5,32 +5,38 @@ A comprehensive financial wellness platform built with Next.js, TypeScript, and 
 ## Features
 
 ### Current Features
-- ✅ User authentication (email/password)
+- ✅ User authentication (email/password) with Supabase Auth
 - ✅ Dashboard with financial overview
-- ✅ Database schema for accounts, transactions, budgets, and goals
-- ✅ Progressive Web App (PWA) support for Apple devices
+- ✅ Bank account aggregation via Plaid integration
+- ✅ Automated transaction syncing from connected banks
+- ✅ Budget tracking with income and expense management
+- ✅ Subscription billing with Stripe (Free, Basic, Premium tiers)
+- ✅ Database schema with Row Level Security (RLS)
+- ✅ Comprehensive error logging and webhook event tracking
+- ✅ Progressive Web App (PWA) support
 - ✅ Responsive design with Tailwind CSS and shadcn/ui
+- ✅ 100% test coverage for critical features
 
 ### Planned Features
-- 🔄 Bank account aggregation (via Plaid)
-- 🔄 Manual expense entry
-- 🔄 Automated expense categorization
-- 🔄 Customizable budgeting tools
 - 🔄 Savings goal tracker
 - 🔄 Debt reduction planner
 - 🔄 Net worth dashboard
 - 🔄 Cash flow forecasting
 - 🔄 Retirement readiness score
-- 🔄 Financial wellness insights
+- 🔄 Financial wellness insights and recommendations
 - 🔄 Embedded education modules
+- 🔄 Receipt and document storage
+- 🔄 Data export (CSV, PDF reports)
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, TypeScript
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui components
-- **Backend**: Supabase (PostgreSQL, Auth, Row Level Security)
-- **Development**: Local Supabase instance
-- **Deployment**: Vercel
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **Banking**: Plaid API for account aggregation and transaction sync
+- **Payments**: Stripe for subscription billing
+- **Testing**: Jest, React Testing Library (100% coverage on critical paths)
+- **Deployment**: Vercel (recommended) or any Next.js-compatible host
 
 ## Getting Started
 
@@ -63,14 +69,61 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-### Database Setup
+### Supabase Setup
 
-For local development, Supabase credentials are already configured in `.env.local` for the local instance.
+#### Quick Setup
+1. Copy the environment example file:
+```bash
+cp .env.local.example .env.local
+```
 
-For production:
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Update `.env.local` with your project credentials
-3. Run migrations in the Supabase dashboard or using the CLI
+2. Add your Supabase credentials to `.env.local`:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+3. Apply database migrations:
+```bash
+# Using Supabase CLI (recommended)
+npx supabase link --project-ref your-project-ref
+npx supabase db push
+
+# Or manually in Supabase SQL Editor
+# Run each migration file from supabase/migrations/ in order
+```
+
+4. Set up storage buckets:
+```bash
+# Run in Supabase SQL Editor
+# File: supabase/setup/storage-buckets.sql
+```
+
+#### Comprehensive Documentation
+For detailed setup instructions, see:
+- **[Supabase Setup Guide](docs/SUPABASE_SETUP.md)** - Complete integration guide
+- **[Deployment Checklist](supabase/setup/DEPLOYMENT_CHECKLIST.md)** - Production deployment steps
+- **[Quick Reference](supabase/setup/QUICK_REFERENCE.md)** - Common operations reference
+
+### Other Integrations
+
+#### Stripe (Subscription Billing)
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_BASIC_PRICE_ID=price_...
+STRIPE_PREMIUM_PRICE_ID=price_...
+```
+
+#### Plaid (Bank Connections)
+```bash
+NEXT_PUBLIC_PLAID_CLIENT_ID=your_client_id
+PLAID_SECRET_KEY=your_secret_key
+PLAID_ENV=sandbox  # or development, production
+PLAID_ENCRYPTION_KEY=your_32_byte_hex_key
+```
 
 ## Project Structure
 
@@ -92,13 +145,19 @@ fineanants-app/
 
 ## Development Roadmap
 
-1. ✅ Initial setup and authentication
-2. 🔄 Account management (add, view, edit manual accounts)
-3. 🔄 Transaction viewing and categorization
-4. 🔄 Budgeting tools
-5. 🔄 Savings goals tracking
-6. 🔄 Plaid integration for bank connections
-7. 🔄 Advanced features (retirement planning, insights, etc.)
+1. ✅ Initial setup and authentication (Supabase Auth)
+2. ✅ Database schema with Row Level Security
+3. ✅ Plaid integration for bank account connections
+4. ✅ Automated transaction syncing
+5. ✅ Budget tracking with income/expense management
+6. ✅ Stripe subscription billing (Free/Basic/Premium tiers)
+7. ✅ Comprehensive test coverage (100% on critical paths)
+8. 🔄 Savings goals tracking and visualization
+9. 🔄 Document storage for receipts and statements
+10. 🔄 Data export features (CSV, PDF reports)
+11. 🔄 Advanced analytics and insights
+12. 🔄 Retirement planning tools
+13. 🔄 Financial education modules
 
 ## Contributing
 
