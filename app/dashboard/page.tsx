@@ -8,7 +8,7 @@ import { ReconnectAccountPrompt } from "@/components/reconnect-account-prompt";
 import { PlaidLinkButton } from "@/components/plaid-link-button";
 import { PlaidAccountsList } from "@/components/plaid-accounts-list";
 import { PlaidTransactionsList } from "@/components/plaid-transactions-list";
-import { ManualAccountSection } from "@/components/manual-account-section";
+import { ArrowRight } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -180,16 +180,16 @@ export default async function DashboardPage() {
               <CardDescription>Connected financial accounts</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{totalAccounts}</div>
-              {totalAccounts === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No accounts connected yet
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Total balance: {formatCurrency(netWorth + totalDebt)}
-                </p>
-              )}
+              <div className="text-3xl font-bold">0</div>
+              <p className="text-sm text-muted-foreground mt-2">
+                No accounts connected yet
+              </p>
+              <Link href="/dashboard/accounts">
+                <Button variant="link" className="mt-2 p-0 h-auto">
+                  View All Accounts
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -199,16 +199,16 @@ export default async function DashboardPage() {
               <CardDescription>Track your progress</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{activeSavingsGoals} Active</div>
-              {activeSavingsGoals === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Create your first savings goal
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Keep working towards your goals
-                </p>
-              )}
+              <div className="text-3xl font-bold">0 Active</div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Create your first savings goal
+              </p>
+              <Link href="/dashboard/goals">
+                <Button variant="link" className="mt-2 p-0 h-auto">
+                  View All Goals
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -278,11 +278,19 @@ export default async function DashboardPage() {
 
           {/* All Accounts */}
           <Card>
-            <CardHeader>
-              <CardTitle>Your Accounts</CardTitle>
-              <CardDescription>
-                All your financial accounts and their balances
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Your Accounts</CardTitle>
+                <CardDescription>
+                  All your financial accounts and their balances
+                </CardDescription>
+              </div>
+              <Link href="/dashboard/accounts">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <PlaidAccountsList />
@@ -291,11 +299,19 @@ export default async function DashboardPage() {
 
           {/* Recent Transactions */}
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>
-                Your latest financial activity across all accounts
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Recent Transactions</CardTitle>
+                <CardDescription>
+                  Your latest financial activity across all accounts
+                </CardDescription>
+              </div>
+              <Link href="/dashboard/transactions">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <PlaidTransactionsList />
@@ -341,8 +357,8 @@ export default async function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Track progress toward your financial goals</p>
                 </div>
                 <div className="sm:flex-shrink-0">
-                  <Link href="/dashboard/budget">
-                    <Button size="sm">Set Goals</Button>
+                  <Link href="/dashboard/goals">
+                    <Button size="sm">View Goals</Button>
                   </Link>
                 </div>
               </div>

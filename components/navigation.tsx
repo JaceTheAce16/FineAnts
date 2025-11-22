@@ -7,10 +7,10 @@ import { Button } from "./ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/accounts", label: "Accounts" },
+  { href: "/dashboard/accounts", label: "Accounts" },
   { href: "/dashboard/transactions", label: "Transactions" },
   { href: "/dashboard/budget", label: "Budget" },
-  { href: "/goals", label: "Goals" },
+  { href: "/dashboard/goals", label: "Goals" },
   { href: "/dashboard/subscription", label: "Subscription" },
 ];
 
