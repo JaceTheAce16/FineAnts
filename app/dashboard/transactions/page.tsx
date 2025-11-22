@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Transactions Page
  * View and manage all financial transactions with filtering and manual entry
