@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PlaidLinkButton } from '@/components/plaid-link-button';
 import { AlertTriangle, AlertCircle, X } from 'lucide-react';
@@ -20,7 +20,7 @@ export function ReconnectAccountPrompt() {
     fetchItemsNeedingReconnect();
   }, []);
 
-  const fetchItemsNeedingReconnect = async () => {
+  const fetchItemsNeedingReconnect = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -42,16 +42,16 @@ export function ReconnectAccountPrompt() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleDismiss = (itemId: string) => {
     setDismissedItems(prev => new Set(prev).add(itemId));
   };
 
-  const handleReconnectSuccess = async () => {
+  const handleReconnectSuccess = useCallback(async () => {
     // Refresh the list after successful reconnection
     await fetchItemsNeedingReconnect();
-  };
+  }, [fetchItemsNeedingReconnect]);
 
   const getErrorMessage = (item: PlaidItem) => {
     if (item.status === 'pending_expiration') {
