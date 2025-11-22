@@ -11,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Filter, Download, Edit2, Save, X, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 
 
-export default async function TransactionsPage() {
-  const supabase = await createClient();
+export default function TransactionsPage() {
 
 // Types
 interface Transaction {
