@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Wallet, CreditCard, Building, TrendingUp, DollarSign, Home, Car, Loader2, Edit2, Save, X } from 'lucide-react';
 import { PlaidLinkButton } from '@/components/plaid-link-button';
 import { PlaidAccountsList } from '@/components/plaid-accounts-list';
+import { PlaidSyncProgress } from '@/components/plaid-sync-progress';
 
 // Types
 interface FinancialAccount {
@@ -44,6 +45,7 @@ export default function AccountsPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [syncId, setSyncId] = useState<string | null>(null);  // Track Plaid sync progress
   const [formData, setFormData] = useState({
     name: '',
     account_type: 'checking',
@@ -208,11 +210,30 @@ export default function AccountsPage() {
               Accounts automatically synced with your financial institutions
             </p>
           </div>
-          <PlaidLinkButton onSuccess={() => window.location.reload()}>
+          <PlaidLinkButton
+            onSuccess={(newSyncId) => {
+              // Set syncId to start showing progress
+              setSyncId(newSyncId || null);
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Connect Account
           </PlaidLinkButton>
         </div>
+
+        {/* Show sync progress if syncing */}
+        {syncId && (
+          <div className="mb-4">
+            <PlaidSyncProgress
+              syncId={syncId}
+              onComplete={() => {
+                // Reload page when sync completes
+                window.location.reload();
+              }}
+            />
+          </div>
+        )}
+
         <PlaidAccountsList />
       </Card>
 

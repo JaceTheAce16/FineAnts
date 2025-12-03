@@ -13,7 +13,7 @@ import { AlertCircle } from 'lucide-react';
 import type { SubscriptionTier } from '@/lib/types/database';
 
 interface PlaidLinkButtonProps {
-  onSuccess: () => void;
+  onSuccess: (syncId?: string) => void;  // Now receives optional syncId
   onError?: (error: string) => void;
   accessToken?: string; // For update mode
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
@@ -65,8 +65,12 @@ export function PlaidLinkButton({
           throw new Error(errorData.error || 'Failed to connect account');
         }
 
-        // Call success callback
-        onSuccess();
+        // Parse response to get syncId
+        const data = await response.json();
+
+        // Call success callback with syncId
+        // syncId is used to poll for background sync progress
+        onSuccess(data.syncId);
       } catch (error) {
         console.error('Error exchanging token:', error);
         if (onError) {
