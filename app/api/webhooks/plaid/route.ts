@@ -1,6 +1,11 @@
 /**
  * Plaid Webhook Handler
  * Processes webhook events from Plaid to keep account data synchronized
+ *
+ * Updated: 2025-12-02
+ * - Added automatic retry logic with exponential backoff
+ * - Enhanced error tracking and monitoring
+ * - Fixed critical issue: errors no longer silently swallowed
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,6 +13,8 @@ import { createClient } from '@supabase/supabase-js';
 import { syncUserTransactions } from '@/lib/plaid/sync-service';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { processWebhookWithRetry } from '@/lib/webhooks/retry-handler';
+import { trackWebhookError } from '@/lib/monitoring/error-tracker';
 
 // Create Supabase admin client with service role key for webhook operations
 // This bypasses Row Level Security policies
@@ -215,35 +222,81 @@ export async function POST(request: NextRequest) {
 
     const userId = itemData.user_id;
 
-    // Handle different webhook types
-    switch (webhook.webhook_type) {
-      case 'TRANSACTIONS':
-        await handleTransactionsWebhook(webhook, userId);
-        break;
+    // Process webhook with automatic retry logic
+    const result = await processWebhookWithRetry(
+      webhook,
+      async (wh) => {
+        // Handle different webhook types
+        switch (wh.webhook_type) {
+          case 'TRANSACTIONS':
+            await handleTransactionsWebhook(wh, userId);
+            break;
 
-      case 'ITEM':
-        await handleItemWebhook(webhook, userId);
-        break;
+          case 'ITEM':
+            await handleItemWebhook(wh, userId);
+            break;
 
-      default:
-        console.log(`Unhandled webhook type: ${webhook.webhook_type}`);
-    }
+          default:
+            console.log(`Unhandled webhook type: ${wh.webhook_type}`);
+        }
+      },
+      {
+        provider: 'plaid',
+        maxRetries: 3,
+        initialDelayMs: 1000,
+        timeout: 30000,
+        onRetry: (attempt, error) => {
+          console.log(`🔄 Retrying Plaid webhook ${webhook.item_id} (attempt ${attempt})`, error);
+        },
+        onFailure: (error, attempts) => {
+          console.error(`❌ Plaid webhook ${webhook.item_id} failed after ${attempts} attempts`);
+          trackWebhookError(error, {
+            provider: 'plaid',
+            eventType: webhook.webhook_type,
+            eventId: webhook.item_id,
+            attemptNumber: attempts,
+          });
+        },
+      }
+    );
 
     // Log webhook event to database
     await supabaseAdmin.from('webhook_events').insert({
       event_type: 'plaid_webhook',
       event_data: webhook,
-      processed: true,
+      processed: result.success,
       processed_at: new Date().toISOString(),
+      error_message: result.success ? null : (result.error instanceof Error ? result.error.message : 'Unknown error'),
     });
 
-    // Always return 200 OK to acknowledge receipt
-    return NextResponse.json({ received: true });
+    if (result.success) {
+      console.log(`✅ Plaid webhook processed successfully: ${webhook.item_id} (${result.attempts} attempts, ${result.processingTimeMs}ms)`);
+      return NextResponse.json({ received: true });
+    } else {
+      console.error(`❌ Plaid webhook processing failed: ${webhook.item_id} (${result.attempts} attempts, ${result.processingTimeMs}ms)`);
+      // Return 200 to acknowledge receipt (our retry handler already attempted multiple times)
+      return NextResponse.json({
+        received: true,
+        processed: false,
+        note: 'Webhook received but processing failed after retries. Check dead letter queue.'
+      });
+    }
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    console.error('Error processing Plaid webhook:', error);
 
-    // Still return 200 to prevent Plaid from retrying
-    // Log the error for manual investigation
-    return NextResponse.json({ received: true });
+    // Track critical errors that occurred outside the retry handler
+    trackWebhookError(error, {
+      provider: 'plaid',
+      eventType: 'unknown',
+      eventId: 'unknown',
+      attemptNumber: 1,
+    });
+
+    // Return 200 to acknowledge receipt
+    return NextResponse.json({
+      received: true,
+      processed: false,
+      note: 'Critical error occurred. Check logs.'
+    });
   }
 }

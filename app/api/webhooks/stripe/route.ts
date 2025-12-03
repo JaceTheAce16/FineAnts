@@ -1,6 +1,11 @@
 /**
  * Stripe Webhook Handler
  * Processes webhook events from Stripe to keep subscriptions synchronized
+ *
+ * Updated: 2025-12-02
+ * - Added automatic retry logic with exponential backoff
+ * - Enhanced error tracking and monitoring
+ * - Improved idempotency handling
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,6 +13,8 @@ import { stripe } from '@/lib/stripe/client';
 import { stripeConfig } from '@/lib/stripe/config';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { processWebhookWithRetry } from '@/lib/webhooks/retry-handler';
+import { trackWebhookError } from '@/lib/monitoring/error-tracker';
 
 // Create Supabase admin client with service role key for webhook operations
 // This bypasses Row Level Security policies
@@ -191,30 +198,55 @@ export async function POST(request: NextRequest) {
     console.error('Error logging webhook event:', logError);
   }
 
-  try {
-    // Handle different event types
-    switch (event.type) {
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdate(event.data.object as Stripe.Subscription);
-        break;
+  // Process webhook with automatic retry logic
+  const result = await processWebhookWithRetry(
+    event,
+    async (evt) => {
+      // Handle different event types
+      switch (evt.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdate(evt.data.object as Stripe.Subscription);
+          break;
 
-      case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-        break;
+        case 'customer.subscription.deleted':
+          await handleSubscriptionDeleted(evt.data.object as Stripe.Subscription);
+          break;
 
-      case 'invoice.payment_succeeded':
-        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
-        break;
+        case 'invoice.payment_succeeded':
+          await handleInvoicePaymentSucceeded(evt.data.object as Stripe.Invoice);
+          break;
 
-      case 'invoice.payment_failed':
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
-        break;
+        case 'invoice.payment_failed':
+          await handleInvoicePaymentFailed(evt.data.object as Stripe.Invoice);
+          break;
 
-      default:
-        console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        default:
+          console.log(`ℹ️ Unhandled event type: ${evt.type}`);
+      }
+    },
+    {
+      provider: 'stripe',
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      timeout: 30000,
+      onRetry: (attempt, error) => {
+        console.log(`🔄 Retrying webhook ${event.id} (attempt ${attempt})`, error);
+      },
+      onFailure: (error, attempts) => {
+        console.error(`❌ Webhook ${event.id} failed after ${attempts} attempts`);
+        trackWebhookError(error, {
+          provider: 'stripe',
+          eventType: event.type,
+          eventId: event.id,
+          attemptNumber: attempts,
+        });
+      },
     }
+  );
 
+  // Update webhook event status in database
+  if (result.success) {
     // Mark as processed
     await supabaseAdmin
       .from('webhook_events')
@@ -224,23 +256,28 @@ export async function POST(request: NextRequest) {
       })
       .eq('stripe_event_id', event.id);
 
+    console.log(`✅ Webhook processed successfully: ${event.id} (${result.attempts} attempts, ${result.processingTimeMs}ms)`);
     return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('❌ Webhook processing error:', error);
-
-    // Log error
+  } else {
+    // Log error in database
     await supabaseAdmin
       .from('webhook_events')
       .update({
         processed: false,
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_message: result.error instanceof Error ? result.error.message : 'Unknown error',
       })
       .eq('stripe_event_id', event.id);
 
-    // Return 500 to trigger Stripe retry
+    // Return 200 to acknowledge receipt (prevents Stripe's own retry)
+    // Our retry handler already attempted multiple times
+    console.error(`❌ Webhook processing failed: ${event.id} (${result.attempts} attempts, ${result.processingTimeMs}ms)`);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
+      {
+        received: true,
+        processed: false,
+        note: 'Event received but processing failed after retries. Check dead letter queue.'
+      },
+      { status: 200 }
     );
   }
 }

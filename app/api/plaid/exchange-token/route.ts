@@ -5,11 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { exchangePublicToken, getAccounts, syncTransactions } from '@/lib/plaid/client';
+import { exchangePublicToken, getAccounts } from '@/lib/plaid/client';
 import { storeAccessToken } from '@/lib/plaid/token-manager';
-import { mapPlaidCategoryToApp } from '@/lib/plaid/category-mapper';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import type { AccountType } from '@/lib/types/database';
+import { startHistoricalSync } from '@/lib/plaid/background-sync';
 
 const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -152,110 +152,19 @@ export function mapPlaidAccountType(type: string, subtype: string | null): Accou
 }
 
 /**
- * Fetch and store initial historical transactions for a newly connected account
- * Uses cursor-based sync to retrieve up to 2 years of transaction history
+ * NOTE: fetchInitialHistoricalTransactions has been removed!
+ *
+ * Historical transaction syncing is now handled by the background sync system
+ * in lib/plaid/background-sync.ts to prevent API route timeouts.
+ *
+ * The old implementation blocked the HTTP request for 10-30 seconds waiting
+ * for 2 years of transactions to sync, exceeding Vercel's 30-second timeout.
+ *
+ * New flow:
+ * 1. exchange-token returns immediately with syncId
+ * 2. Background sync runs independently
+ * 3. Frontend polls /api/plaid/sync-status for progress
  */
-async function fetchInitialHistoricalTransactions(
-  userId: string,
-  itemId: string,
-  accessToken: string
-): Promise<{ transactionCount: number; error?: string }> {
-  try {
-    let cursor: string | undefined = undefined;
-    let hasMore = true;
-    let totalTransactions = 0;
-    let iterationCount = 0;
-    const MAX_ITERATIONS = 50; // Prevent infinite loops (safety limit)
-
-    console.log(`Starting historical transaction fetch for item ${itemId}`);
-
-    // Use cursor-based sync to fetch all available historical transactions
-    while (hasMore && iterationCount < MAX_ITERATIONS) {
-      iterationCount++;
-
-      const syncResult = await syncTransactions(accessToken, cursor);
-
-      // Process added transactions
-      if (syncResult.added.length > 0) {
-        const transactionInserts = [];
-
-        for (const plaidTxn of syncResult.added) {
-          // Get the account_id from financial_accounts table
-          const { data: accountData } = await supabaseAdmin
-            .from('financial_accounts')
-            .select('id')
-            .eq('plaid_account_id', plaidTxn.accountId)
-            .eq('user_id', userId)
-            .single();
-
-          if (!accountData) {
-            console.warn(`Account not found for plaid_account_id: ${plaidTxn.accountId}`);
-            continue;
-          }
-
-          const category = mapPlaidCategoryToApp(plaidTxn.category);
-
-          transactionInserts.push({
-            user_id: userId,
-            account_id: accountData.id,
-            plaid_transaction_id: plaidTxn.transactionId,
-            amount: plaidTxn.amount,
-            description: plaidTxn.name,
-            category: category,
-            transaction_date: plaidTxn.date,
-            is_pending: plaidTxn.pending,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-        }
-
-        // Batch insert transactions
-        if (transactionInserts.length > 0) {
-          const { error: insertError } = await supabaseAdmin
-            .from('transactions')
-            .insert(transactionInserts);
-
-          if (insertError) {
-            console.error('Error inserting transactions:', insertError);
-            // Continue processing even if some transactions fail
-          } else {
-            totalTransactions += transactionInserts.length;
-            console.log(`Inserted ${transactionInserts.length} transactions (batch ${iterationCount})`);
-          }
-        }
-      }
-
-      // Update cursor for next iteration
-      cursor = syncResult.nextCursor;
-      hasMore = syncResult.hasMore;
-
-      console.log(
-        `Sync iteration ${iterationCount}: Added ${syncResult.added.length} transactions, hasMore: ${hasMore}`
-      );
-    }
-
-    // Store the final cursor in plaid_items table for future syncs
-    await supabaseAdmin
-      .from('plaid_items')
-      .update({
-        transactions_cursor: cursor,
-        last_sync: new Date().toISOString(),
-      })
-      .eq('item_id', itemId);
-
-    console.log(
-      `Historical transaction fetch complete for item ${itemId}: ${totalTransactions} transactions in ${iterationCount} iterations`
-    );
-
-    return { transactionCount: totalTransactions };
-  } catch (error) {
-    console.error('Error fetching historical transactions:', error);
-    return {
-      transactionCount: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -314,21 +223,23 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to store accounts: ${insertError.message}`);
     }
 
-    // Fetch initial historical transactions (up to 2 years)
-    // This is done asynchronously - we don't wait for completion to return the response
-    // The transactions will be available shortly after account connection
-    const historicalResult = await fetchInitialHistoricalTransactions(
+    // Start historical transaction sync in background
+    // This returns immediately (< 500ms) while sync continues independently
+    // Frontend will poll /api/plaid/sync-status/{itemId} for progress
+    const { syncId } = await startHistoricalSync(
       user.id,
       itemId,
       accessToken
     );
 
+    console.log(`✅ Account connected: ${itemId}. Background sync started: ${syncId}`);
+
     return NextResponse.json({
       success: true,
       itemId,
       accountCount: accounts.length,
-      transactionCount: historicalResult.transactionCount,
-      transactionFetchError: historicalResult.error,
+      syncId,  // Frontend uses this to poll for status
+      message: 'Account connected! Syncing transactions in background...',
     });
   } catch (error) {
     console.error('Error exchanging token:', error);
