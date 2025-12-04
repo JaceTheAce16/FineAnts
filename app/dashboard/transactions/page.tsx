@@ -609,6 +609,7 @@ export default function TransactionsPage() {
           )}
         </div>
       </Card>
+      </div>
     </div>
   );
 }

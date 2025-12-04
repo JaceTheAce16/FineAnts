@@ -272,7 +272,9 @@ export default async function DashboardPage() {
               >
                 Connect with Plaid
               </PlaidLinkButton>
-              <ManualAccountSection />
+              <Link href="/dashboard/accounts">
+                <Button variant="outline">Add Manual Account</Button>
+              </Link>
             </CardContent>
           </Card>
 

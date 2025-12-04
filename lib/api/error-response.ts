@@ -100,9 +100,9 @@ export function handleApiError(
   // Return NextResponse with appropriate status code
   return NextResponse.json(response, {
     status: errorInfo.statusCode,
-    headers: {
+    headers: response.requestId ? {
       'X-Request-ID': response.requestId,
-    },
+    } : undefined,
   });
 }
 

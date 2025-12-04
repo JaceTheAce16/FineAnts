@@ -24,7 +24,7 @@ import { getSyncStatus, isSyncCompleted, isSyncFailed } from '@/lib/plaid/backgr
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
     // Authenticate user
@@ -38,7 +38,7 @@ export async function GET(
       );
     }
 
-    const itemId = params.itemId;
+    const { itemId } = await params;
 
     if (!itemId) {
       return NextResponse.json(
