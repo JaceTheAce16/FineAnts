@@ -275,6 +275,7 @@ export default function TransactionsPage() {
             </div>
           </div>
         </Card>
+      </div>
 
       {/* Add Transaction Form */}
       {showAddForm && (
@@ -609,7 +610,6 @@ export default function TransactionsPage() {
           )}
         </div>
       </Card>
-      </div>
     </div>
   );
 }
