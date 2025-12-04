@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { SubscriptionStatus } from "@/components/subscription-status";
 import { ReconnectAccountPrompt } from "@/components/reconnect-account-prompt";
-import { PlaidLinkButton } from "@/components/plaid-link-button";
+import { DashboardPlaidSection, DashboardPlaidGetStarted } from "@/components/dashboard-plaid-section";
 import { PlaidAccountsList } from "@/components/plaid-accounts-list";
 import { PlaidTransactionsList } from "@/components/plaid-transactions-list";
 import { ArrowRight } from "lucide-react";
@@ -266,12 +266,7 @@ export default async function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4">
-              <PlaidLinkButton
-                onSuccess={() => window.location.reload()}
-                onError={(error) => console.error('Plaid connection error:', error)}
-              >
-                Connect with Plaid
-              </PlaidLinkButton>
+              <DashboardPlaidSection />
               <Link href="/dashboard/accounts">
                 <Button variant="outline">Add Manual Account</Button>
               </Link>
@@ -333,13 +328,7 @@ export default async function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Link bank accounts, credit cards, and investments</p>
                 </div>
                 <div className="sm:flex-shrink-0">
-                  <PlaidLinkButton
-                    onSuccess={() => window.location.reload()}
-                    size="sm"
-                    showLimitInfo={false}
-                  >
-                    Get Started
-                  </PlaidLinkButton>
+                  <DashboardPlaidGetStarted />
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
