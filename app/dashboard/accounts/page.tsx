@@ -10,9 +10,6 @@ import { createClient } from '@/lib/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Wallet, CreditCard, Building, TrendingUp, DollarSign, Home, Car, Loader2, Edit2, Save, X } from 'lucide-react';
-import { PlaidLinkButton } from '@/components/plaid-link-button';
-import { PlaidAccountsList } from '@/components/plaid-accounts-list';
-import { PlaidSyncProgress } from '@/components/plaid-sync-progress';
 
 // Types
 interface FinancialAccount {
@@ -45,7 +42,6 @@ export default function AccountsPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [syncId, setSyncId] = useState<string | null>(null);  // Track Plaid sync progress
   const [formData, setFormData] = useState({
     name: '',
     account_type: 'checking',
@@ -207,34 +203,20 @@ export default function AccountsPage() {
           <div>
             <h2 className="text-xl font-semibold">Connected Accounts (Plaid)</h2>
             <p className="text-sm text-muted-foreground">
-              Accounts automatically synced with your financial institutions
+              Auto-sync with financial institutions - Coming Soon!
             </p>
           </div>
-          <PlaidLinkButton
-            onSuccess={(newSyncId) => {
-              // Set syncId to start showing progress
-              setSyncId(newSyncId || null);
-            }}
-          >
+          <Button disabled variant="outline" size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Connect Account
-          </PlaidLinkButton>
+            <span className="ml-2 text-xs bg-secondary px-2 py-0.5 rounded">Coming Soon</span>
+          </Button>
         </div>
 
-        {/* Show sync progress if syncing */}
-        {syncId && (
-          <div className="mb-4">
-            <PlaidSyncProgress
-              syncId={syncId}
-              onComplete={() => {
-                // Reload page when sync completes
-                window.location.reload();
-              }}
-            />
-          </div>
-        )}
-
-        <PlaidAccountsList />
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          <p>Automatic bank account sync via Plaid is coming soon.</p>
+          <p className="mt-2">For now, please use manual accounts below.</p>
+        </div>
       </Card>
 
       {/* Manual Accounts */}

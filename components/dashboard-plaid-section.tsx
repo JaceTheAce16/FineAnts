@@ -5,39 +5,27 @@
  * Client component wrapper for interactive Plaid buttons
  */
 
-import { PlaidLinkButton } from "@/components/plaid-link-button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function DashboardPlaidSection() {
-  const handlePlaidSuccess = () => {
-    window.location.reload();
-  };
-
-  const handlePlaidError = (error: string) => {
-    console.error('Plaid connection error:', error);
-  };
-
   return (
-    <PlaidLinkButton
-      onSuccess={handlePlaidSuccess}
-      onError={handlePlaidError}
-    >
-      Connect with Plaid
-    </PlaidLinkButton>
+    <div className="relative">
+      <Button disabled variant="outline" className="relative">
+        Connect with Plaid
+        <Badge variant="secondary" className="ml-2 text-xs">Coming Soon</Badge>
+      </Button>
+    </div>
   );
 }
 
 export function DashboardPlaidGetStarted() {
-  const handlePlaidSuccess = () => {
-    window.location.reload();
-  };
-
   return (
-    <PlaidLinkButton
-      onSuccess={handlePlaidSuccess}
-      size="sm"
-      showLimitInfo={false}
-    >
-      Get Started
-    </PlaidLinkButton>
+    <div className="relative">
+      <Button disabled size="sm" variant="outline" className="relative">
+        Get Started
+        <Badge variant="secondary" className="ml-2 text-xs">Coming Soon</Badge>
+      </Button>
+    </div>
   );
 }

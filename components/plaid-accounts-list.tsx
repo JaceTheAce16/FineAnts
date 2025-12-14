@@ -195,7 +195,7 @@ export function PlaidAccountsList({ onAccountsChange }: PlaidAccountsListProps) 
       <div className="text-center py-12">
         <p className="text-muted-foreground">No accounts yet.</p>
         <p className="text-sm text-muted-foreground mt-2">
-          Connect your accounts via Plaid or add them manually to get started.
+          Add manual accounts to get started.
         </p>
       </div>
     );
